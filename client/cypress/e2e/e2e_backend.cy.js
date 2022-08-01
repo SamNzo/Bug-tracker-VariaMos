@@ -23,6 +23,8 @@ describe('testing application with backend', ()=>{
       //Put a username with the minimum number of characters
       cy.get('input[name="username"]').type('u');
       cy.findByText('Must be at least 3 characters').should('be.visible')
+      cy.get('input[name="username"]').clear().type('username ');
+      cy.findByText('Only alphanum, dash & underscore characters are allowed').should('be.visible')
       cy.get('input[name="username"]').clear().type('username');
 
       //Put a password with the minimum number of characters
@@ -189,9 +191,9 @@ describe('testing application with backend', ()=>{
 
         cy.findByRole('textbox', {
           name: /select admin\(s\) to assign the bug to/i
-        }).type('username3')
+        }).type('username2')
 
-        cy.findByText('username3').click()
+        cy.findByText('username2').click()
 
         cy.findByRole('button', {
           name: /assign bug/i
@@ -466,14 +468,12 @@ describe('testing application with backend', ()=>{
           name: /closed/i
         }).click()
         cy.findByText('title2').should('be.visible')
-        cy.findByText('title3').should('not.be.visible')
 
         //Open
         cy.findByRole('radio', {
           name: /open/i
         }).click()
         cy.findByText('title3').should('be.visible')
-        cy.findByText('title2').should('not.be.visible')
 
         //All
         cy.findByRole('radio', {
@@ -486,7 +486,6 @@ describe('testing application with backend', ()=>{
           name: /mybugs/i
         }).click()
         cy.findByText('title2').should('be.visible')
-        cy.findByText('title3').should('not.be.visible')
 
       })
       it('user should be able to sort the bugs', ()=>{
@@ -558,12 +557,132 @@ describe('testing application with backend', ()=>{
     })
 
   })
-  //
-  // describe('user should be able to manage admins', () => {
-  //
-  // })
-  //
-  // describe('user should be able to change his settings', () => {
-  //
-  // })
+
+  describe('user should be able to manage admins', () => {
+    beforeEach(() =>{
+      cy.visit('http://localhost:3000');
+      //Logging in
+      cy.findByRole('button', {name: /log in/i }).click()
+      cy.get('input[name="username"]').type('username2');
+      cy.get('input[name="password"]').type('password');
+      cy.get('button[type="submit"]').click()
+      cy.wait(1500)
+
+    })
+
+    it('user should be able to remove admin and cancel', ()=>{
+      cy.findByRole('button', {name: /view admins/i}).click()
+      cy.findByText('username3')
+      cy.get('button[class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall"]').click()
+      cy.findByRole('button', {name: /cancel/i}).click()
+
+    })
+    it('user should be able to remove admin', ()=>{
+      cy.findByRole('button', {name: /view admins/i}).click()
+      cy.findByText('username3')
+      cy.get('button[class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall"]').click()
+      cy.findByRole('button', {name: /remove admin/i}).click()
+
+    })
+    it('user should be able to invite admin by mail', ()=>{
+      cy.findByRole('button', {name: /add administrators/i}).click()
+      cy.findByRole('button', {name: /invite administrator/i}).click()
+
+      //Short username
+      cy.get('input[name="email"]').type('invalid_email')
+      cy.get('input[name="login"]').type('u')
+      cy.findByRole('button', {name: /invite administrator/i}).click()
+      cy.findByText('Username must be in range of 3-20 characters length.').should('be.visible')
+
+      //Long username
+      let wrongUsername = 'x'
+      cy.get('input[name="login"]').type(wrongUsername.repeat(25));
+      cy.findByRole('button', {name: /invite administrator/i}).click()
+      cy.findByText('Username must be in range of 3-20 characters length.').should('be.visible')
+
+      //Wrong email
+      cy.get('input[name="login"]').clear().type('username3');
+      cy.findByRole('button', {name: /invite administrator/i}).click()
+      cy.findByText('Invalid email adress.').should('be.visible')
+
+      //Wrong username
+      cy.get('input[name="email"]').type('m@m')
+      cy.findByRole('button', {name: /invite administrator/i}).click()
+      cy.findByText('Username \'username3\' is already taken.').should('be.visible')
+
+      //Good parameters
+      cy.get('input[name="login"]').clear().type('username4');
+      cy.findByRole('button', {name: /invite administrator/i}).click()
+      cy.findByText('New admin added! Email was sent successfully!').should('be.visible')
+
+    })
+    it('user should be able to add admin with existing account', ()=>{
+      cy.findByRole('button', {name: /add administrators/i}).click()
+      cy.findByRole('button', {name: /add administrator \(user must already exist\)/i}).click()
+      cy.findByRole('textbox', {name: /select admin\(s\)/i}).type('username')
+      cy.findByText('username').click()
+      cy.findByRole('button', {name: /add new administrators/i}).click()
+
+    })
+    it('user should be able to view and hide admin list', ()=>{
+      cy.findByRole('button', {name: /view admins/i}).click()
+      cy.findByText('username')
+      cy.findByRole('button', {name: /hide admins/i}).click()
+      cy.findByText('View Admins')
+    })
+  })
+
+  describe('user should be able to change his settings', () => {
+    beforeEach(() =>{
+      cy.visit('http://localhost:3000');
+      //Logging in
+      cy.findByRole('button', {name: /log in/i }).click()
+      cy.get('input[name="username"]').type('username2');
+      cy.get('input[name="password"]').type('password');
+      cy.get('button[type="submit"]').click()
+      cy.wait(1500)
+      cy.findByRole('button', {
+        name: /settings/i
+      }).click()
+
+    })
+    it('user can change his email adress', ()=>{
+      cy.findByRole('textbox').clear().type('new@mail')
+      cy.findByRole('button', {name: /change settings/i}).click()
+      cy.findByText('New settings saved!').should('be.visible')
+
+      //Cerification
+      cy.findByRole('button', {name: /log out/i}).click()
+      cy.findByRole('button', {name: /log in/i }).click()
+      cy.get('input[name="username"]').type('username2');
+      cy.get('input[name="password"]').type('password');
+      cy.get('button[type="submit"]').click()
+      cy.wait(1500)
+      cy.findByRole('button', {name: /settings/i}).click()
+      cy.findByRole('textbox').should('have.value','new@mail')
+
+    })
+    it('user should be able to change his password', ()=>{
+
+      //Wrong password
+      cy.get('input[name="newPassword"]').type('password')
+      cy.get('input[name="oldPassword"]').type('wrongpassword')
+      cy.get('button[type="submit"]').click()
+      cy.findByText('Wrong password..').should('be.visible')
+
+      //Good password
+      cy.get('input[name="oldPassword"]').clear().type('password')
+      cy.get('button[type="submit"]').click()
+      cy.findByText('New settings saved!').should('be.visible')
+
+    })
+    it('user should be able to turn on or off notification', ()=>{
+      cy.findByRole('radio', {name: /off/i}).click()
+      cy.findByRole('radio', {name: /on/i}).click()
+      cy.findByRole('button', {name: /change settings/i}).click()
+
+    })
+
+  })
+
 })
