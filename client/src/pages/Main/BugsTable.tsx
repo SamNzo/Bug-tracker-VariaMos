@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BugState, User, UserState } from '../../redux/types';
 import BugsMenu from './BugsMenu';
 import { formatDateTime } from '../../utils/helperFuncs';
-import { priorityStyles, statusStyles } from '../../styles/customStyles';
+import { priorityStyles, statusStyles, categoryStyles } from '../../styles/customStyles';
 
 import {
   Table,
@@ -100,8 +100,14 @@ const BugsTable: React.FC<{ bugs: BugState[], user: UserState | null }> = ({ bug
                 </div>
               </TableCell>
               <TableCell align="center">
+              <div
+                  style={{
+                    ...categoryStyles(b.category),
+                    margin: '0 auto',
+                  }}
+                >
                 {b.category}
-
+              </div>
               </TableCell>
               <TableCell align="center">
                 {formatDateTime(b.createdAt)} ~{b.createdBy.username}

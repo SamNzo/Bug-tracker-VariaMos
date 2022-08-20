@@ -14,7 +14,7 @@ import BugForm from './BugForm';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import NotesCard from './NotesCard';
 import { formatDateTime } from '../../utils/helperFuncs';
-import { priorityStyles, statusStyles } from '../../styles/customStyles';
+import { priorityStyles, statusStyles, categoryStyles } from '../../styles/customStyles';
 import CSS from 'csstype';
 
 import { Paper, Typography, Divider, useMediaQuery, Button } from '@material-ui/core';
@@ -38,7 +38,6 @@ const BugsDetailsPage: React.FC<{
   const classes = useMainPageStyles();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
   const history = useHistory();
   const dispatch = useDispatch();
 
@@ -60,6 +59,13 @@ const BugsDetailsPage: React.FC<{
       isVideo = true;
     }
   }
+  let isFromGithub: boolean = false;
+  if (bug?.ImageFilePath) {
+    if (bug?.ImageFilePath.includes('https://user-images.githubusercontent.com')) {
+      isFromGithub = true;
+    }
+  }
+
   const adminsAssigned: string[] = [];
   const { user } = useSelector(selectAuthState);
   const users = useSelector(selectUsersState).users;
@@ -172,6 +178,22 @@ const BugsDetailsPage: React.FC<{
       return <div style={statusCSS}>Open</div>;
     }
   };
+
+  const categoryCSS: CSS.Properties = {
+    ...categoryStyles(category),
+    display: 'inline',
+    padding: '0.20em 0.4em',
+  };
+
+  const categoryInfo = () => {
+    console.log(category)
+      return (
+        <span>
+          <div style={categoryCSS}>{category}</div>
+        </span>
+      );
+    }
+
 
   const closeReopenBtns = () => {
     if (isResolved) {
@@ -307,12 +329,21 @@ const BugsDetailsPage: React.FC<{
             Status: {statusInfo()}
           </Typography>
           <div className="center">
-          {(bug.ImageFilePath && !isVideo) ? (
+          {(bug.ImageFilePath && !isVideo && !isFromGithub) ? (
               <img src={'/Images/' + bug.ImageFilePath} width="500vw" max-height="80vh"></img>
           ) : '' }
-          {(bug.ImageFilePath && isVideo) ? (
+          {(bug.ImageFilePath && !isVideo && isFromGithub) ? (
+              <img src={bug.ImageFilePath} width="500vw" max-height="80vh"></img>
+          ) : '' }
+          {(bug.ImageFilePath && isVideo && !isFromGithub) ? (
             <video width="320" height="240" controls>
             <source src={'/Images/' + bug.ImageFilePath} type="video/mp4"></source>
+            Your browser does not support the video tag.
+          </video>
+          ) : '' }
+          {(bug.ImageFilePath && isVideo && isFromGithub) ? (
+            <video width="320" height="240" controls>
+            <source src={bug.ImageFilePath} type="video/mp4"></source>
             Your browser does not support the video tag.
           </video>
           ) : '' }
@@ -340,17 +371,7 @@ const BugsDetailsPage: React.FC<{
             variant="subtitle2"
             className={classes.marginText}
           >
-            Class:{' '}
-            {/*<div
-              style={{
-                ...priorityStyles(priority),
-                display: 'inline',
-                padding: '0.20em 0.4em',
-                textTransform: 'capitalize',
-              }}
-            >*/}
-              {category}
-            {/*</div>*/}
+            Category:{categoryInfo()}
           </Typography>
           <Typography color="secondary" variant="subtitle2">
             Created by: <strong>{createdBy.username}</strong>

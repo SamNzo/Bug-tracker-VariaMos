@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
+import { AssignedAdmins } from '../entity/AssignedAdmins';
 import { Bug } from '../entity/Bug';
 import { Note } from '../entity/Note';
 import { User } from '../entity/User';
@@ -67,6 +68,10 @@ export const getBugs = async (_req: Request, res: Response) => {
     const JSON_issues = JSON.parse(gitIssues);
     // For each issue
     for (let gitIssue of JSON_issues) {
+      // If it is a pull request do not fetch it
+      if ('pull_request' in gitIssue) {
+        break;
+      }
       const gitIssueNumber = gitIssue.number;
       // Check if it is already on the Bug Tracker
       let cpt = 0;
@@ -96,6 +101,11 @@ export const getBugs = async (_req: Request, res: Response) => {
                       // Case where the bug is closed on the Bug Tracker but opened on Github (someone re-opened it on Github)
                       b.isResolved = false;
                     }
+                    if (!b.isResolved && gitIssue.state === "closed") {
+                      // Case where the bug is closed on Github
+                      b.isResolved = true;
+                    }
+                    
                     // Category
                     if (gitIssue.labels.length > 0 && gitIssue.labels[0].name === "question") {
                       b.category = "Question";
@@ -104,9 +114,67 @@ export const getBugs = async (_req: Request, res: Response) => {
                       b.category = "Enhancement";
                     }
                     else if (gitIssue.labels.length > 0 && gitIssue.labels[0].name === "bug") {
-                      b.category = "";
+                      b.category = "Bug";
                     }
-                    b.save();
+                    // Assignments
+                    // Get all assignments to this bug
+                    await AssignedAdmins.find({ where: { bugId: b.id }}).then(async (assignments) => {
+                      // If at least one admin is assigned to this bug on the Bug Tracker
+                      if (assignments.length > 0) {
+                        // Add assignments for admins assigned to the bug on Gitub 
+                        // who are not already assigned to the bug on the Bug Tracker
+                        for (let assignee of gitIssue.assignees) {
+                          for (let assignment of assignments) {
+                            await User.findOne({ where: {id: assignment.adminId }}).then(async (admin) => {
+                              if (admin) {
+                                if (assignee.login !== admin.github) {
+                                  // Find the admin (works if he entered his github username)
+                                  await User.findOne({ where: { github: assignee.login }}).then((u) => {
+                                    // If he did assign him the bug
+                                    if (u) {
+                                      AssignedAdmins.create({
+                                        bugId: b.id,
+                                        adminId: u.id,
+                                      })
+                                    }                      
+                                  })
+                                }
+                              }
+                            })
+                          }
+                        }
+                      }
+                      // If no one is assigned to this bug on the Bug Tracker
+                      else {
+                        // Add all the assigned on Github to the Bug Tracker
+                        for (let assignee of gitIssue.assignees) {
+                          // Find the admin (works if he entered his github username)
+                          await User.findOne({ where: { github: assignee.login }}).then((u) => {
+                            // If he did assign him the bug
+                            if (u) {
+                              const newAssignment= AssignedAdmins.create({
+                                bugId: b.id,
+                                adminId: u.id,
+                              })
+                              newAssignment.save();
+                            }                      
+                          })
+                        }
+                      }
+                    })
+                    
+                    // Image/Video
+                    if (gitIssue.body !== null) {
+                      if (gitIssue.body.includes('https://user-images.githubusercontent.com')) {
+                        const fileUrl: string = gitIssue.body.match(/https:\/\/user-images\.githubusercontent\.com\/[0-9]+\/(.*)\.(mp4|png|jpg|jpeg|mp3|gif|tif|tiff)/gm)[0];
+                        if (fileUrl !== '') {
+                          b.ImageFilePath = fileUrl;
+                        }
+                      }
+                    }
+
+                
+                    await b.save();
                     over = true;    
                 }   
               });
@@ -115,23 +183,33 @@ export const getBugs = async (_req: Request, res: Response) => {
             cpt += 1;
           }
         }
+
         if (cpt === bugs.length) {
           // If not, it was created on Github Issues
           // So we create it on the Bug Tracker also
           // Get the creator id (works if he entered his Github username in his settings)
           let creatorId: string = ''; 
+          let status: boolean = false;
           await User.findOne({ where: { github: gitIssue.user.login }}).then((u) => {
             if (u) {creatorId = u.id}
             else {creatorId = "00000000-0000-0000-0000-000000000000"}
+            if (gitIssue.state === "closed") {status = true}
           });
-          console.log(creatorId);
+          let fileUrl = null;
+          if (gitIssue.body !== null) {
+            console.log(gitIssue.title)
+            console.log("here!")
+            console.log(gitIssue.body)
+            fileUrl = gitIssue.body.match(/https:\/\/user-images\.githubusercontent\.com\/[0-9]+\/(.*)\.(mp4|png|jpg|jpeg|mp3|gif|tif|tiff)/gm)[0];
+          }
           const newBug = Bug.create({
             title: gitIssue.title,
             description: gitIssue.body,
             createdById: creatorId,
+            isResolved: status,
+            ImageFilePath: fileUrl,
             gitIssueNumber: gitIssue.number
           });
-
           await newBug.save();
         }
     }
@@ -141,7 +219,7 @@ export const getBugs = async (_req: Request, res: Response) => {
 };
 
 export const createBug = async (req: Request, res: Response) => {
-  const { title, description, priority, category } = req.body;
+  let { title, description, priority, category } = req.body;
 
   const { errors, valid } = createBugValidator(title, description, priority);
 
@@ -167,6 +245,9 @@ export const createBug = async (req: Request, res: Response) => {
     }
   }
   lastBugTitle = title;
+
+  if (category === '') {category = 'Bug'};
+
   const newBug = Bug.create({
     title,
     description,

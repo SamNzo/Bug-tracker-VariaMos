@@ -77,9 +77,9 @@ const BugForm: React.FC<BugFormProps> = ({
   "App Architecture",
   "Security Issue", 
   "Feature Models",
-  "TestRequirements Models",
+  "Test Requirements Models",
   "Components Models",
-  "DomainSecurityRequirements Models",
+  "Domain Security Requirements Models",
   "SecurityRequirements Models",
   "istar Models",
   "UI Components Models",
@@ -190,7 +190,7 @@ const BugForm: React.FC<BugFormProps> = ({
                 <TextField
                   {...params}
                   variant="outlined"
-                  label="Class (optional)"
+                  label="Category (optional)"
                   InputProps={{
                     ...params.InputProps,
                     startAdornment: (

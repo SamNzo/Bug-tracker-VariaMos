@@ -111,7 +111,6 @@ export const changeSettings = async (req: Request, res: Response) => {
         let unauthorized = false;
         await verifyGitUser(githubToken).then(r => {
         const response = JSON.parse(r);
-        console.log(response);
         if (response.message === 'Bad credentials') {
           unauthorized = true;
         }
@@ -243,8 +242,6 @@ export const sendNotification = async (req: Request, res: Response) => {
   for (let admin of admins) {
     
     if (admin.notificationsOn === true) {
-      //console.log(`Going to send email to ${admin.username}...`);
-      console.log(`email de ${admin.username} : `, admin.email);
       let transporter = nodemailer.createTransport({
         maxConnections: 200,
         pool: true,

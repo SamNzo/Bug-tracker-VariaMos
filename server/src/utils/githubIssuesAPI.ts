@@ -32,9 +32,8 @@ const createGitIssues = async (title: string, body: string, category?: string) =
             headers: {'Content-Type': 'application/json', 'Authorization': `token ${GithubPersonnalToken}`}
         })
             .then(res => res.json())
-            .then(res =>
-                IssueId = res.number
-            )
+            .then(res => IssueId = res.number)
+
     } catch (e) {console.log(e)};
 
    return IssueId;
@@ -110,7 +109,7 @@ const reopenGitIssues = async (ISSUE_NUMBER: number) => {
         headers: {'Content-Type': 'application/vnd.github+json', 'Authorization': `token ${GithubPersonnalToken}`}
     })
         .then(res =>  res.json())
-        .then(res => console.log(res))
+
     } catch (e) {console.log(e)};
     // Second API Call to re-open the issue
     const JSON_OPEN_DATA = {
@@ -129,7 +128,7 @@ const reopenGitIssues = async (ISSUE_NUMBER: number) => {
 
 /**
  *  This function assigns an issue to a specified user in Github Issues 
- *  The user must have permissions on the repository.
+ *  The user must have admin permissions on the repository
  */
 const assignGitIssues = async (ISSUE_NUMBER: number, assignees: string[]) => {
     const JSON_DATA = {
@@ -143,7 +142,7 @@ const assignGitIssues = async (ISSUE_NUMBER: number, assignees: string[]) => {
         headers: {'Content-Type': 'application/json', 'Authorization': `token ${GithubPersonnalToken}`}
     })
         .then(res =>  res.json())
-        .then(res => console.log(res))
+
     } catch (e) {console.log(e)};
 }
 
@@ -154,7 +153,7 @@ const assignGitIssues = async (ISSUE_NUMBER: number, assignees: string[]) => {
 const getGitIssues = async () => {
     let response: Response | string = "";
     try {
-        await fetch(`https://api.github.com/repos/${GithubUser}/${GithubRepo}/issues`, {
+        await fetch(`https://api.github.com/repos/${GithubUser}/${GithubRepo}/issues?`, {
             method: 'get',
             headers: {'Content-Type': 'application/json', 'Authorization': `token ${GithubPersonnalToken}`}
         })

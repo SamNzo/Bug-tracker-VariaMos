@@ -43,7 +43,7 @@ const DemoCredsBox: React.FC<{
         </Alert>
         <Alert severity="warning">
         <AlertTitle>Note</AlertTitle>
-        The expiration date does not matter.
+        The expiration date and the scope do not matter.
         <br></br>
         <b>Your token will only be used to verify your account.
         </b>
@@ -98,11 +98,11 @@ const DemoCredsBox: React.FC<{
       <div style={{ width: '100%', marginTop: '0.8em', marginBottom: '0.8em' }}>
         <Alert severity="info">
           <AlertTitle>What is this ?</AlertTitle>
-          This is optional. If your issue is related to a specific VariaMos language or bug type please select it from the list.
-          If you do not know which one to choose, leave this field empty. 
+          This field is optional. If you have a question, an issue related to a specific VariaMos language or a proposal of enhancement select the corresponding flair.
+          If you do not know which one to choose, leave this field empty.
         </Alert>
       </div>  
-    )}        
+    )}         
   else {
   return (
     <div style={{ width: '100%', marginTop: '0.8em', marginBottom: '0.8em' }}>
