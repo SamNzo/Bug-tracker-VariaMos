@@ -111,5 +111,8 @@ To run it, run this command:
 ## Screenshots
 Because a picture is worth 1000 words.
 
+#### Documentation
+You can find more documentation on the [wiki](https://github.com/SamNzo/Bug-tracker-VariaMos/wiki).
+
 #### VariaMos online
 Here you can check the VariaMos [application](https://variamos.azurewebsites.net/) and [website](https://variamos.com/home/).
