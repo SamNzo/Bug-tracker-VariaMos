@@ -107,11 +107,8 @@ To build the container, run this command in the root directory:
 
 To run it, run this command:
 `docker-compose up`
- 
-## Screenshots
-Because a picture is worth 1000 words.
 
-#### Documentation
+## Documentation
 You can find more documentation on the [wiki](https://github.com/SamNzo/Bug-tracker-VariaMos/wiki).
 
 #### VariaMos online
