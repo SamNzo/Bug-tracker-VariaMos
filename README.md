@@ -36,14 +36,15 @@ This bug tracker is a modified version of the open source one made by [amand33p]
 
 ## Features
 
+- Synchronization with Github Issues through REST API (issues, assignments, comments)
 - Authentication (login/register w/ username, password & optional email adress)
-- CRUD bugs, with title, description, priority & optional file (image, gif, video, JSON)
+- CRUD bugs, with title, description, priority, category & optional file (image, gif, video, JSON)
 - Email notifications (can be turned off)
 - Anyone can add a bug and leave notes
 - Users can create an account to receive email notifications
-- Admins can add/remove other admins, delete, close, update, assign bugs and dowload JSON files associated to them
+- Admins can add/remove other admins, delete, close, update, assign bugs, download JSON files associated to them and link the tracker to their Github account
 - ReCAPTCHA test to access the admin invite verification page
-- Sort bugs by various parameters like priority, recentely closed etc.
+- Sort bugs by various parameters like priority, recently closed etc.
 - Filter bugs by name/title/assignments & other parameters
 - CRUD notes, for guiding other members with possibility to reply
 - Descriptive color indicators for bug priority & status
@@ -110,12 +111,8 @@ To run it, run this command:
 ## Screenshots
 Because a picture is worth 1000 words.
 
-<img src="https://github.com/SamNzo/Bug-tracker-VariaMos/blob/master/screenshots/signup%20page.png">
-<img src="https://github.com/SamNzo/Bug-tracker-VariaMos/blob/master/screenshots/bug%20pages.png">
-<img src="https://github.com/SamNzo/Bug-tracker-VariaMos/blob/master/screenshots/add%20bug.png">
-<img src="https://github.com/SamNzo/Bug-tracker-VariaMos/blob/master/screenshots/bug%20details.png">
-<img src="https://github.com/SamNzo/Bug-tracker-VariaMos/blob/master/screenshots/notes.png">
-<img src="https://github.com/SamNzo/Bug-tracker-VariaMos/blob/master/screenshots/settings.png">
+#### Documentation
+You can find more documentation on the [wiki](https://github.com/SamNzo/Bug-tracker-VariaMos/wiki).
 
 #### VariaMos online
 Here you can check the VariaMos [application](https://variamos.azurewebsites.net/) and [website](https://variamos.com/home/).
