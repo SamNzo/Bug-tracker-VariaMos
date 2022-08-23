@@ -34,5 +34,5 @@ const GithubPersonnalToken = 'put personal access token here';
 The first admin has to be added by hand by setting the **isAdmin** field to **true** in the database.
 Once one admin is added he can add others via the app.
 
-*Note: In the table **users** do not change the row of the user named 'user'*
+**Note: In the table *users* do not change the row of the user named 'user'**
 
