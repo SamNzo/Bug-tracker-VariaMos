@@ -6,7 +6,7 @@ The app is currently connected with the VariaMos database.
 If you want to change it, change the parameters in `ormconfig.js`.
 
 ## Google reCAPTCHA
-If the reCAPTCHA does not work, a new key should be generated [here](https://www.google.com/recaptcha/admin/create).
+If the reCAPTCHA does not work, a new key should be generated [here](https://www.google.com/recaptcha/admin/create) (version 2).
 
 You will have to change the `GoogleReCaptchaKey` variable in `client/src/utils/variables` with the secret key and 
 the `siteKey` variable in `client/src/pages/Auth/InviteVerificationPage.tsx` with the site key.
