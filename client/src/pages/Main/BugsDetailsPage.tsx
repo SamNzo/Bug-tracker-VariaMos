@@ -186,7 +186,6 @@ const BugsDetailsPage: React.FC<{
   };
 
   const categoryInfo = () => {
-    console.log(category)
       return (
         <span>
           <div style={categoryCSS}>{category}</div>

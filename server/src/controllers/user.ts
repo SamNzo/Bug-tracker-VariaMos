@@ -102,13 +102,15 @@ export const changeSettings = async (req: Request, res: Response) => {
     if (user.email === email && user.username !== currentUser?.username && email !== "") {
       return res.status(400).send({ message: `Email adress ${email} is already taken.` });
     }
-    if (user.github === github && user.username !== currentUser?.username) {
+    if (user.github === github && user.username !== currentUser?.username && user.isAdmin) {
       return res.status(400).send({ message: `Github username ${github} is already taken.` });
     }
   };
 
-  if (github !== currentUser?.github && github !== '') {
+  if (github !== currentUser?.github && github !== '' && currentUser?.isAdmin) {
         let unauthorized = false;
+        // Verify the user
+        // Use the Github REST API to check if the username given matches the one associated with the token
         await verifyGitUser(githubToken).then(r => {
         const response = JSON.parse(r);
         if (response.message === 'Bad credentials') {
@@ -124,7 +126,7 @@ export const changeSettings = async (req: Request, res: Response) => {
     })
   }
 
-  if (githubToken !=='' && github === '') {
+  if (githubToken !=='' && github === '' && currentUser?.isAdmin) {
     return res.status(400).send({ message: `Personal access token needs to be matched with a Github username.` })
   }
       

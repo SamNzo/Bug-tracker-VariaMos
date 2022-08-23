@@ -197,9 +197,6 @@ export const getBugs = async (_req: Request, res: Response) => {
           });
           let fileUrl = null;
           if (gitIssue.body !== null) {
-            console.log(gitIssue.title)
-            console.log("here!")
-            console.log(gitIssue.body)
             fileUrl = gitIssue.body.match(/https:\/\/user-images\.githubusercontent\.com\/[0-9]+\/(.*)\.(mp4|png|jpg|jpeg|mp3|gif|tif|tiff)/gm)[0];
           }
           const newBug = Bug.create({

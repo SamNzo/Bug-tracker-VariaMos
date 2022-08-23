@@ -88,7 +88,7 @@ const UserButtonsDesktop: React.FC<UserMenu> = ({
                     style: { marginLeft: '10px' },
                   }
             }
-            title="Change your personnal settings"
+            title="Change your personal settings"
           >
             <EmailForm emailExist={emailExist} />
           </FormDialog>
