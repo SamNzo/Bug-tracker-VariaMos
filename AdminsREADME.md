@@ -2,10 +2,11 @@
 This file is intended for VariaMos developers.
 
 ## Database
-As explained in the README file you have to change the parameters in `ormconfig.js` to connect to the VariaMos database.
+The app is currently connected with the VariaMos database.
+If you want to change it, change the parameters in `ormconfig.js`.
 
 ## Google reCAPTCHA
-If the reCAPTCHA does not work, a new key should be generated [here](https://www.google.com/recaptcha/admin/create).
+If the reCAPTCHA does not work, a new key should be generated [here](https://www.google.com/recaptcha/admin/create) (version 2).
 
 You will have to change the `GoogleReCaptchaKey` variable in `client/src/utils/variables` with the secret key and 
 the `siteKey` variable in `client/src/pages/Auth/InviteVerificationPage.tsx` with the site key.
@@ -19,5 +20,19 @@ To create it go to **Settings > Developer settings > Personnal access token** an
 
 Then change the `GithubPersonnalToken`, `GithubRepo` and `GithubUser` variables in `server/src/utils/variables` to respectively match the newly created token and the names of the VariaMos repository and its owner.
 
+```
+// Credentials to use the Github Rest API
+// To interact with Github Issues
+const GithubUser = 'put variamos repository owner's username here';
+const GithubRepo = 'put variamos repository name here';
+const GithubPersonnalToken = 'put personal access token here';
+```
+
 *Note: The token is deleted if it is pushed to github (for security)*
+
+## Grant admin privilege
+The first admin has to be added by hand by setting the **isAdmin** field to **true** in the database.
+Once one admin is added he can add others via the app.
+
+**Note: In the table *users* do not change the row of the user named 'user'**
 
