@@ -39,7 +39,7 @@ const InviteVerificationPage: React.FC<InviteVerificationPageProps> = ({
   }) => {
   const classes = useAuthPageStyles();
   const [isVerified, setIsVerified] = useState(false);
-  const [isHuman, setIsHuman] = useState(true);
+  const [isHuman, setIsHuman] = useState(false);
   const { loading, error } = useSelector(selectAuthState);
 
   const { register, handleSubmit, errors } = useForm({
