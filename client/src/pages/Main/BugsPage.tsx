@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchBugs,
-  selectBugsByProjectId,
+  selectBugs,
   selectBugsState,
 } from '../../redux/slices/bugsSlice';
 import { RootState } from '../../redux/store';
@@ -24,8 +24,9 @@ const BugsPage: React.FC<{ isMobile: boolean }> = ({
     const classes = useMainPageStyles();
     const dispatch = useDispatch();
     const bugs = useSelector((state: RootState) =>
-    selectBugsByProjectId(state)
-  );
+    selectBugs(state)
+    );
+    
   const { fetchLoading, fetchError, sortBy, filterBy } = useSelector(
     selectBugsState
   );

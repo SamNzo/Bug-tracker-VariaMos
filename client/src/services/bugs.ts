@@ -10,14 +10,14 @@ const getBugs = async () => {
   return response.data;
 };
 
-const createBug = async (bugData: BugPayload, form: FormData) => {
-  const response = await axios.post(baseUrl, bugData ,setConfig())
+const createBug = async (bugData: BugPayload, form: FormData, category: string) => {
+  const response = await axios.post(baseUrl, [bugData, category], setConfig())
   axios.post(backendUrl + '/bugs/upload', form);
   return response.data;
 };
 
-const updateBug = async (bugId: string, bugData: BugPayload, form: FormData) => {
-  const response = await axios.put(`${baseUrl}/${bugId}`, bugData, setConfig());
+const updateBug = async (bugId: string, bugData: BugPayload, form: FormData, category: string) => {
+  const response = await axios.put(`${baseUrl}/${bugId}`, [bugData, category], setConfig());
   axios.post(backendUrl + '/bugs/upload', form);
   return response.data; 
 };
@@ -48,13 +48,14 @@ const reopenBug = async (bugId: string) => {
   return response.data;
 };
 
+
 const bugService = {
   getBugs,
   createBug,
   updateBug,
   deleteBug,
   closeBug,
-  reopenBug,
+  reopenBug
 };
 
 export default bugService;

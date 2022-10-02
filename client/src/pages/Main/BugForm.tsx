@@ -6,7 +6,10 @@ import {
   clearSubmitBugError,
   selectBugsState,
 } from '../../redux/slices/bugsSlice';
-import { BugPayload } from '../../redux/types';
+import {
+  createCategory, deleteCategory, fetchCategories, selectCategoriesState
+} from '../../redux/slices/categoriesSlice';
+import { BugPayload, Category } from '../../redux/types';
 import ErrorBox from '../../components/ErrorBox';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -28,14 +31,15 @@ import {
   IconButton,
 } from '@material-ui/core';
 import { useFormStyles } from '../../styles/muiStyles';
-import GroupIcon from '@material-ui/icons/Group';
+import AddBoxOutlined from '@material-ui/icons/AddBoxOutlined';
+import RemoveCircleOutline from '@material-ui/icons/RemoveCircleOutline';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import TitleIcon from '@material-ui/icons/Title';
 import SubjectIcon from '@material-ui/icons/Subject';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Autocomplete } from '@material-ui/lab';
-import axios from 'axios';
 import DemoCredsBox from '../../components/DemoCredsBox';
+import { selectAuthState } from '../../redux/slices/authSlice';
 
 const validationSchema = yup.object({
   title: yup
@@ -45,7 +49,7 @@ const validationSchema = yup.object({
     .max(60, 'Must be at most 60 characters'),
 
   description: yup.string().required('Required'),
-  class: yup.string()
+  category: yup.string()
 });
 
 interface BugFormProps {
@@ -63,29 +67,27 @@ const BugForm: React.FC<BugFormProps> = ({
 }) => {
   const classes = useFormStyles();
   const dispatch = useDispatch();
+  const user = useSelector(selectAuthState).user;
   const { submitError, submitLoading } = useSelector(selectBugsState);
   const [bugCategory, setBugCategory] = useState<string>('');
+  const [newCategoryName, setNewCategoryName] = useState<string>('');
+  const [addCategory, setAddCategory] = useState<boolean>(false);
+  const [removeCategory, setRemoveCategory] = useState<boolean>(false);
   const [descriptionHelp, setDescriptionbHelp] = useState(false);
-  const [classHelp, setClassHelp] = useState(false);
+  const [categoryHelp, setCategoryHelp] = useState(false);
   const [imageHelp, setImageHelp] = useState(false);
   const [JSONHelp, setJSONHelp] = useState(false);
- 
-  // If you want to add a BugClass, add it to the following list
-  const BugCategories = [
-  "Question",
-  "Enhancement",
-  "App Architecture",
-  "Security Issue", 
-  "Feature Models",
-  "Test Requirements Models",
-  "Components Models",
-  "Domain Security Requirements Models",
-  "SecurityRequirements Models",
-  "istar Models",
-  "UI Components Models",
-  "Adaptive AML Models",
-  "UI Variability Models"
-  ];
+
+  const bugCategories = useSelector(selectCategoriesState).categories;
+  const bugCategoriesNames = bugCategories.map((cat) => cat.name);
+
+  // Fetch basic/default bug categories from database (VariaMos languages have to be added with the UI)
+  useEffect(() => {
+    if (bugCategories.length === 0) {
+      dispatch(fetchCategories());
+    }
+    // eslint-disable-next-line
+  }, []);
 
   const { register, control, handleSubmit, errors } = useForm({
     mode: 'onChange',
@@ -94,15 +96,35 @@ const BugForm: React.FC<BugFormProps> = ({
       title: currentData?.title || '',
       description: currentData?.description || '',
       priority: currentData?.priority || 'low',
-      class: currentData?.category || '',
+      category: currentData?.category || '',
     },
   });
 
-  const handleClassChange = (e: any, selectedOption: string |null) => {
+  const handleChangeCategory = (e: any, selectedOption: string | null) => {
     if (selectedOption) {
       setBugCategory(selectedOption);
     }
   };
+
+  const handleViewAddCategory = () => {
+    setAddCategory(!addCategory);
+  }
+
+  const handleViewRemoveCategory = () => {
+    setRemoveCategory(!removeCategory);
+  }
+
+  const handleNewCategoryName = (e: any) => {
+    setNewCategoryName(e.target.value);
+  }
+
+  const handleAddCategory = (e: any) => {
+    dispatch(createCategory(newCategoryName))
+  }
+
+  const handleRemoveCategory = (e: any) => {
+    dispatch(deleteCategory(bugCategory))
+  }
 
   const handleCreateBug = async (data: BugPayload) => {
     const formData = new FormData(form);
@@ -181,9 +203,9 @@ const BugForm: React.FC<BugFormProps> = ({
           <Autocomplete
               style={{ marginTop: 20 }}
               filterSelectedOptions
-              onChange={handleClassChange}
+              onChange={handleChangeCategory}
               options={
-                  BugCategories
+                bugCategoriesNames
               }
               getOptionLabel={(option) => option}
               renderInput={(params) => (
@@ -200,11 +222,26 @@ const BugForm: React.FC<BugFormProps> = ({
                           style={{ paddingLeft: '0.4em' }}
                         >
                           <IconButton
-                            onClick={() => setClassHelp((prevState) => !prevState)}
+                            onClick={() => setCategoryHelp((prevState) => !prevState)}
                             size="small"
                           >
                             <HelpOutlineIcon color="primary" />
                           </IconButton>
+                        {user?.isAdmin && (
+                              <><IconButton
+                              onClick={() => handleViewAddCategory()}
+                              size="small"
+                            >
+                              <AddBoxOutlined color="primary" />
+
+                            </IconButton>
+                            <IconButton
+                              onClick={() => handleViewRemoveCategory()}
+                              size="small"
+                            >
+                                <RemoveCircleOutline color="primary" />
+                              </IconButton></>
+                        )}
                         </InputAdornment>
                         {params.InputProps.startAdornment}
                       </>
@@ -240,9 +277,92 @@ const BugForm: React.FC<BugFormProps> = ({
                 ))
               }
             />
-        {classHelp && (
-          <DemoCredsBox adminSignup={false} classHelp={true}></DemoCredsBox>
+        {categoryHelp && (
+          <DemoCredsBox adminSignup={false} categoryHelp={true}></DemoCredsBox>
         )}
+        {addCategory && (
+          <><br></br><TextField
+          name="addCategory"
+          required
+          fullWidth
+          onChange={handleNewCategoryName}
+          type="text"
+          label="New category name"
+          variant="outlined"
+          error={'category' in errors}
+          helperText={'category' in errors ? errors.category?.message : ''}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <TitleIcon color="primary" />
+              </InputAdornment>
+            ),
+          }} /><Button
+            size="large"
+            color="primary"
+            variant="contained"
+            fullWidth
+            onClick={(e) => handleAddCategory(e)}
+            className={classes.submitBtn}
+            type="button"
+            disabled={submitLoading}
+          >
+            Add new category
+          </Button></>
+          
+        )}
+        {removeCategory && (
+          <><Autocomplete
+          style={{ marginTop: 20 }}
+          filterSelectedOptions
+          onChange={handleChangeCategory}
+          options={bugCategoriesNames}
+          getOptionLabel={(option) => option}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              label="Select category to delete"
+              InputProps={{
+                ...params.InputProps,
+              }} />
+          )}
+          renderOption={(option) => (
+            <ListItem dense component="div">
+              <ListItemAvatar>
+                <Avatar className={classes.avatar}>
+                  {option.slice(0, 1)}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText
+                primary={option}
+                primaryTypographyProps={{
+                  color: 'secondary',
+                  variant: 'body1',
+                }} />
+            </ListItem>
+          )}
+          renderTags={(value, getTagProps) => value.map((option, index) => (
+            <Chip
+              avatar={<Avatar>{option.slice(0, 1)}</Avatar>}
+              color="secondary"
+              variant="outlined"
+              label={option}
+              {...getTagProps({ index })} />
+          ))} /><Button
+            size="large"
+            color="primary"
+            variant="contained"
+            fullWidth
+            onClick={(e) => handleRemoveCategory(e)}
+            className={classes.submitBtn}
+            type="button"
+            disabled={submitLoading}
+          >
+            Delete category
+          </Button></>
+        )}
+        
         <Controller
           control={control}
           name="priority"
@@ -309,7 +429,6 @@ const BugForm: React.FC<BugFormProps> = ({
             clearErrorMsg={() => dispatch(clearSubmitBugError())} />
         )}
       </form></>
-
   );
 };
 

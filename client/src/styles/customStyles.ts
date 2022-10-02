@@ -1,4 +1,5 @@
 import CSS from 'csstype';
+import { Category } from '../redux/types';
 
 const colors = {
   low: '#00FF7F',
@@ -42,16 +43,32 @@ export const statusStyles = (isResolved: boolean): CSS.Properties => {
   };
 };
 
-export const categoryStyles = (category: string): CSS.Properties => {
-  const color = category === 'Question' ? colors.question : category === 'Enhancement' ? colors.enhancement : colors.bug;
-  const backgroundColor = category === 'Question' ? colors.questionBg : category === 'Enhancement' ? colors.enhancementBg : (category === '' || category === null) ? colors.bug : colors.bugBg;
-  return {
-    color,
-    backgroundColor,
-    borderRadius: '4px',
-    fontWeight: 500,
-    padding: '0.35em',
-    maxWidth: '14em',
-  };
+export const categoryStyles = (category: Category): CSS.Properties => {
+  if (category) {
+    const categoryName = category.name;
+    const color = categoryName === 'Question' ? colors.question : categoryName === 'Enhancement' ? colors.enhancement : colors.bug;
+    const backgroundColor = categoryName === 'Question' ? colors.questionBg : categoryName === 'Enhancement' ? colors.enhancementBg : (categoryName === '' || category === null) ? colors.bug : colors.bugBg;
+    return {
+      color,
+      backgroundColor,
+      borderRadius: '4px',
+      fontWeight: 500,
+      padding: '0.35em',
+      maxWidth: '14em',
+    };
+  }
+  else {
+    const color = colors.bug;
+    const backgroundColor = colors.bugBg;
+    return {
+      color,
+      backgroundColor,
+      borderRadius: '4px',
+      fontWeight: 500,
+      padding: '0.35em',
+      maxWidth: '14em',
+    };
+    }
+  
 }
 

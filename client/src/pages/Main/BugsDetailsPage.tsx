@@ -51,6 +51,7 @@ const BugsDetailsPage: React.FC<{
   const bug = useSelector((state: RootState) =>
     selectBugsById(state, bugId)
   );
+
   const assign = bug?.assignments;
   const adminsAssignedIds = assign?.map((a) => a.adminId);
   let isVideo: boolean = false;
@@ -125,7 +126,6 @@ const BugsDetailsPage: React.FC<{
     priority,
     isResolved,
     createdBy,
-    createdAt,
     updatedBy,
     updatedAt,
     closedBy,
@@ -133,9 +133,6 @@ const BugsDetailsPage: React.FC<{
     reopenedBy,
     reopenedAt,
     notes,
-    assignments,
-    ImageFilePath,
-    JSONFilePath,
     category
   } = bug;
 
@@ -188,7 +185,11 @@ const BugsDetailsPage: React.FC<{
   const categoryInfo = () => {
       return (
         <span>
-          <div style={categoryCSS}>{category}</div>
+          <div 
+          style={categoryCSS}
+          >
+            {category !== null && category.name !== null ? category.name : 'Undetermined'}
+          </div>
         </span>
       );
     }
@@ -240,7 +241,7 @@ const BugsDetailsPage: React.FC<{
         <BugForm
           isEditMode={true}
           bugId={id}
-          currentData={{ title, description, priority }}
+          currentData={{ title, description, priority, category }}
         />
       </FormDialog>
     );

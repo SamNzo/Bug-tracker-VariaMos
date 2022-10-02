@@ -268,6 +268,7 @@ export const sendNotification = async (req: Request, res: Response) => {
       transporter.verify(function (error, _success) {
         if (error) {
           console.log(error);
+          res.status(400);
         } else {
           console.log("Server is ready to take our messages");
         }

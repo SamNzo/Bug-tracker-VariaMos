@@ -18,6 +18,7 @@ import { notify } from './notificationSlice';
 import { History } from 'history';
 import { getErrorMsg } from '../../utils/helperFuncs';
 import userService from '../../services/users';
+import categoriesService from '../../services/categories';
 
 interface InitialBugState {
   bugs: BugState[];
@@ -226,14 +227,13 @@ export const fetchBugs = (): AppThunk => {
 export const createNewBug = (
   bugData: BugPayload,
   form: FormData,
-  bugCategory?: string,
+  bugCategory: string,
   closeDialog?: () => void,
 ): AppThunk => {
   return async (dispatch) => {
     try {
-      bugData.category = bugCategory;
       dispatch(setSubmitBugLoading());
-      const newBug = await bugService.createBug(bugData, form);
+      const newBug = await bugService.createBug(bugData, form, bugCategory);
       dispatch(addBug(newBug));
       dispatch(notify('New bug added!', 'success'));
       closeDialog && closeDialog();
@@ -247,25 +247,25 @@ export const editBug = (
   bugId: string,
   bugData: BugPayload,
   form: FormData,
-  bugCategory?: string,
+  bugCategory: string,
   closeDialog?: () => void
 ): AppThunk => {
   return async (dispatch) => {
     try {
-      bugData.category = bugCategory;
       dispatch(setSubmitBugLoading());
-      const updatedBug = await bugService.updateBug(bugId, bugData, form);
+      const updatedBug = await bugService.updateBug(bugId, bugData, form, bugCategory);
       const {
         title,
         description,
         priority,
         updatedAt,
         updatedBy,
+        category
       } = updatedBug as EditedBugData;
 
       dispatch(
         updateBug({
-          data: { title, description, priority, updatedAt, updatedBy },
+          data: { title, description, priority, updatedAt, updatedBy, category },
           bugId,
         })
       );
@@ -444,12 +444,13 @@ export const selectBugsById = (state: RootState, bugId: string) => {
   return state.bugs.bugs.find((b) => b.id === bugId);
 };
 
-export const selectBugsByProjectId = (state: RootState) => {
+export const selectBugs = (state: RootState) => {
   return state.bugs.bugs;
 };
 
 export const selectAllAdmins = (state: RootState) => {
   return state.users.users.filter((u) => u.isAdmin === true);
 };
+
 
 export default bugsSlice.reducer;

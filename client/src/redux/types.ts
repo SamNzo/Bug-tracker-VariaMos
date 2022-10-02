@@ -25,8 +25,16 @@ export interface Note {
   body: string;
   gitCommentId: number;
   author: User;
+  isReply: boolean;
+  replyId: number;
+  repliesNb: number;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface Category {
+  id: string;
+  name: string;
 }
 
 export interface AssignedAdmins {
@@ -55,8 +63,14 @@ export interface BugState {
   assignments: AssignedAdmins[];
   ImageFilePath: string;
   JSONFilePath: string;
-  category: string;
+  categoryId: string;
+  category: Category;
   gitIssueNumber: number;
+}
+
+export interface CategoryState {
+  id: string;
+  name: string;
 }
 
 export type BugSortValues =
@@ -84,7 +98,7 @@ export interface BugPayload {
   title: string;
   description: string;
   priority: BugPriority;
-  category?: string;
+  category?: Category;
 }
 
 export interface SettingsPayload {

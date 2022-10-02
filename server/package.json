@@ -8,7 +8,7 @@
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
     "lint": "eslint --ext .ts ."
   },
-  "author": "Amandeep S",
+  "author": "Amandeep S & Sam Nzongani",
   "license": "ISC",
   "devDependencies": {
     "@babel/preset-typescript": "^7.18.6",

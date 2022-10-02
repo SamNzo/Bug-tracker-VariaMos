@@ -3,6 +3,7 @@ import { ThunkAction } from 'redux-thunk';
 import authReducer from './slices/authSlice';
 import bugsReducer from './slices/bugsSlice';
 import usersReducer from './slices/usersSlice';
+import categoriesReducer from './slices/categoriesSlice';
 import notificationReducer from './slices/notificationSlice';
 import themeReducer from './slices/themeSlice';
 
@@ -11,6 +12,7 @@ const store = configureStore({
     auth: authReducer,
     bugs: bugsReducer,
     users: usersReducer,
+    categories: categoriesReducer,
     notification: notificationReducer,
     theme: themeReducer,
   },

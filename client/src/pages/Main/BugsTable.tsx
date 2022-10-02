@@ -106,7 +106,7 @@ const BugsTable: React.FC<{ bugs: BugState[], user: UserState | null }> = ({ bug
                     margin: '0 auto',
                   }}
                 >
-                {b.category}
+                  {b.category !== null && b.category.name !== null ? b.category.name : 'Undetermined'}
               </div>
               </TableCell>
               <TableCell align="center">
@@ -134,7 +134,7 @@ const BugsTable: React.FC<{ bugs: BugState[], user: UserState | null }> = ({ bug
                   isAdmin={user?.isAdmin} />
               </TableCell>
             </TableRow>
-            {(b.id === bugId) && (viewBug) ? ( 
+            {(b.id === bugId) && (viewBug) && ( 
               <TableRow>
                 <TableCell colSpan={tableHeaders.length} >
                   <BugCard
@@ -144,7 +144,7 @@ const BugsTable: React.FC<{ bugs: BugState[], user: UserState | null }> = ({ bug
                 />
                 </TableCell>
               </TableRow>
-            ) : '' }</>
+            )}</>
           ))}
         </TableBody>
       </Table>

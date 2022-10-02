@@ -11,6 +11,7 @@ import {
 import { User } from './User';
 import { Note } from './Note';
 import { AssignedAdmins } from './AssignedAdmins';
+import { Category } from './Category';
 
 type Priority = 'low' | 'medium' | 'high';
 
@@ -85,8 +86,11 @@ export class Bug extends BaseEntity {
   @Column()
   JSONFilePath: string;
 
+  @ManyToOne(() => Category, (category) => category)
+  @JoinColumn({ name: "categoryId" })
+  category: Category;
   @Column()
-  category: string;
+  categoryId: string;
 
   @Column()
   gitIssueNumber: number;

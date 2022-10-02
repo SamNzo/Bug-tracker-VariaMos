@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import { AssignedAdmins } from '../entity/AssignedAdmins';
 import { Bug } from '../entity/Bug';
+import { Category } from '../entity/Category';
 import { Note } from '../entity/Note';
 import { User } from '../entity/User';
 import { closeGitIssues, createGitIssues, getGitIssues, reopenGitIssues, updateGitIssues } from '../utils/githubIssuesAPI';
@@ -22,8 +23,10 @@ const fieldsToSelect = [
   'bug.reopenedAt',
   'bug.ImageFilePath',
   'bug.JSONFilePath',
-  'bug.category',
   'bug.gitIssueNumber',
+  'bug.categoryId',
+  'category.id',
+  'category.name',
   'createdBy.id',
   'createdBy.username',
   'updatedBy.id',
@@ -38,6 +41,9 @@ const fieldsToSelect = [
   'note.gitCommentId',
   'note.createdAt',
   'note.updatedAt',
+  'note.isReply',
+  'note.replyId',
+  'note.repliesNb',
   'noteAuthor.id',
   'noteAuthor.username',
   'assignment.adminId',
@@ -55,6 +61,7 @@ export const getBugs = async (_req: Request, res: Response) => {
     .leftJoinAndSelect('bug.notes', 'note')
     .leftJoinAndSelect('note.author', 'noteAuthor')
     .leftJoinAndSelect('bug.assignments', 'assignment')
+    .leftJoinAndSelect('bug.category', 'category')
     .select(fieldsToSelect)
     .getMany();
 
@@ -108,13 +115,25 @@ export const getBugs = async (_req: Request, res: Response) => {
                     
                     // Category
                     if (gitIssue.labels.length > 0 && gitIssue.labels[0].name === "question") {
-                      b.category = "Question";
+                      await Category.findOne({ where: {name: "Question"}}).then((cat) => {
+                        if (cat) {
+                          b.categoryId = cat.id;
+                        }
+                      })
                     }
                     else if (gitIssue.labels.length > 0 && gitIssue.labels[0].name === "enhancement") {
-                      b.category = "Enhancement";
+                      await Category.findOne({ where: {name: "Enhancement"}}).then((cat) => {
+                        if (cat) {
+                          b.categoryId = cat.id;
+                        }
+                      })
                     }
                     else if (gitIssue.labels.length > 0 && gitIssue.labels[0].name === "bug") {
-                      b.category = "Bug";
+                      await Category.findOne({ where: {name: "Bug"}}).then((cat) => {
+                        if (cat) {
+                          b.categoryId = cat.id;
+                        }
+                      })
                     }
                     // Assignments
                     // Get all assignments to this bug
@@ -196,12 +215,19 @@ export const getBugs = async (_req: Request, res: Response) => {
             if (gitIssue.state === "closed") {status = true}
           });
           let fileUrl = null;
+          let fileDescription = null;
           if (gitIssue.body !== null) {
-            fileUrl = gitIssue.body.match(/https:\/\/user-images\.githubusercontent\.com\/[0-9]+\/(.*)\.(mp4|png|jpg|jpeg|mp3|gif|tif|tiff)/gm)[0];
+            fileUrl = gitIssue.body.match(/https:\/\/user-images\.githubusercontent\.com\/[0-9]+\/(.*)\.(mp4|png|jpg|jpeg|mp3|gif|tif|tiff)/gm);
+            if (fileUrl !== null) {
+              fileUrl = fileUrl[0];
+              fileDescription = gitIssue.body.match(/!\[.*]\(https:\/\/user-images\.githubusercontent\.com\/[0-9]+\/(.*)\.(mp4|png|jpg|jpeg|mp3|gif|tif|tiff)\)/gm);
+            }
           }
+          const description = gitIssue.body.replace(fileDescription, "");
+
           const newBug = Bug.create({
             title: gitIssue.title,
-            description: gitIssue.body,
+            description: description,
             createdById: creatorId,
             isResolved: status,
             ImageFilePath: fileUrl,
@@ -216,8 +242,8 @@ export const getBugs = async (_req: Request, res: Response) => {
 };
 
 export const createBug = async (req: Request, res: Response) => {
-  let { title, description, priority, category } = req.body;
-
+  const { title, description, priority } = req.body[0];
+  const category = req.body[1];
   const { errors, valid } = createBugValidator(title, description, priority);
 
   if (!valid) {
@@ -233,6 +259,7 @@ export const createBug = async (req: Request, res: Response) => {
     .leftJoinAndSelect('bug.notes', 'note')
     .leftJoinAndSelect('note.author', 'noteAuthor')
     .leftJoinAndSelect('bug.assignments', 'assignment')
+    .leftJoinAndSelect('bug.category', 'category')
     .select(fieldsToSelect)
     .getMany();
 
@@ -243,17 +270,33 @@ export const createBug = async (req: Request, res: Response) => {
   }
   lastBugTitle = title;
 
-  if (category === '') {category = 'Bug'};
-
   const newBug = Bug.create({
     title,
     description,
     priority,
     createdById: req.user,
-    category: category,
   });
-
+  
   await newBug.save();
+
+  // Category
+  if (category === "") { 
+    await Category.findOne({ where: { name: "Bug" } }).then((cat) => {
+      if (cat) {
+        newBug.categoryId = cat.id;
+        newBug.save();
+      }
+    })
+  }
+  else {
+    await Category.findOne({ where: { name: category } }).then((cat) => {
+      if (cat) {
+        newBug.categoryId = cat.id;
+        newBug.save();
+      }
+    })
+  }
+
 
   var promises: Promise<void>[] = [];
   // Create a corresponding issue in Github Issues
@@ -274,14 +317,19 @@ export const createBug = async (req: Request, res: Response) => {
     .leftJoinAndSelect('bug.notes', 'note')
     .leftJoinAndSelect('note.author', 'noteAuthor')
     .leftJoinAndSelect('bug.assignments', 'assignment')
+    .leftJoinAndSelect('bug.category', 'category')
     .select(fieldsToSelect)
-    .getOne();
+    .getOne()
 
-  return res.status(201).json(relationedBug);
+    return res.status(201).json(relationedBug);
+    
+
+  
 };
 
 export const updateBug = async (req: Request, res: Response) => {
-  const { title, description, priority, category } = req.body;
+  const { title, description, priority } = req.body[0];
+  const category = req.body[1];
   const { bugId } = req.params;
 
   const currentUser = await User.findOne(req.user);
@@ -302,10 +350,19 @@ export const updateBug = async (req: Request, res: Response) => {
     return res.status(400).send({ message: 'Invalid bug ID.' });
   }
 
+  // Category
+  await Category.findOne({ where: { name: category } }).then((cat) => {
+    if (cat) {
+      targetBug.categoryId = cat.id;
+      targetBug.save();
+    }
+  })
+  
+
   targetBug.title = title;
   targetBug.description = description;
   targetBug.priority = priority;
-  if (category !== '') {targetBug.category = category};
+
   targetBug.updatedById = req.user;
   targetBug.updatedAt = new Date();
 
@@ -322,6 +379,7 @@ export const updateBug = async (req: Request, res: Response) => {
     .leftJoinAndSelect('bug.notes', 'note')
     .leftJoinAndSelect('note.author', 'noteAuthor')
     .leftJoinAndSelect('bug.assignments', 'assignment')
+    .leftJoinAndSelect('bug.category', 'category')
     .select(fieldsToSelect)
     .getOne();
 
@@ -352,7 +410,8 @@ export const deleteBug = async (req: Request, res: Response) => {
       return
     }
   });
-    // Remove JSON file associated with bug from the JSON_files folder
+  
+  // Remove JSON file associated with bug from the JSON_files folder
   const JSONpath = "../client/public/JSON_files/" + targetBug.JSONFilePath
   fs.unlink(JSONpath, (err) => {
     if (err) {
@@ -409,6 +468,7 @@ export const closeBug = async (req: Request, res: Response) => {
     .leftJoinAndSelect('bug.notes', 'note')
     .leftJoinAndSelect('note.author', 'noteAuthor')
     .leftJoinAndSelect('bug.assignments', 'assignment')
+    .leftJoinAndSelect('bug.category', 'category')
     .select(fieldsToSelect)
     .getOne();
 
@@ -455,6 +515,7 @@ export const reopenBug = async (req: Request, res: Response) => {
     .leftJoinAndSelect('bug.notes', 'note')
     .leftJoinAndSelect('note.author', 'noteAuthor')
     .leftJoinAndSelect('bug.assignments', 'assignment')
+    .leftJoinAndSelect('bug.category', 'category')
     .select(fieldsToSelect)
     .getOne();
 

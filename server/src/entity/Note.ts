@@ -34,6 +34,15 @@ export class Note extends BaseEntity {
   @Column()
   gitCommentId: number;
 
+  @Column()
+  isReply: boolean;
+
+  @Column()
+  replyId: number;
+
+  @Column()
+  repliesNb: number;
+
   @CreateDateColumn()
   createdAt: Date;
 

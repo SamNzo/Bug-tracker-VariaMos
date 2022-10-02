@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectAuthState } from '../../redux/slices/authSlice';
 import { deleteNote } from '../../redux/slices/bugsSlice';
@@ -10,14 +10,16 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import FormDialog from '../../components/FormDialog';
 import InfoText from '../../components/InfoText';
 import { formatTimeAgo } from '../../utils/helperFuncs';
-
-import { Paper, Typography, Avatar, Divider } from '@material-ui/core';
-import { useMainPageStyles } from '../../styles/muiStyles';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { Paper, Typography, Avatar, Divider, Button } from '@material-ui/core';
+import { useMainPageStyles, useTableStyles } from '../../styles/muiStyles';
 import ForumOutlinedIcon from '@material-ui/icons/ForumOutlined';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import ReplyIcon from '@material-ui/icons/Reply';
 import CommentOutlinedIcon from '@material-ui/icons/CommentOutlined';
+import ReplyCard from './ReplyCard';
 
 export type NoteSortValues = 'newest' | 'oldest' | 'updated';
 
@@ -36,7 +38,10 @@ const NotesCard: React.FC<{
   const dispatch = useDispatch();
   const { user } = useSelector(selectAuthState);
   const [sortBy, setSortBy] = useState<NoteSortValues>('newest');
-
+  const [viewReplies, setViewReplies] = useState<boolean>(false);
+  const [noteId, setNoteId] = useState<number>(0);
+  //const [notesToSeeReplies, setNotesToSeeReplies] = useState<{ [id: number] : boolean; }>({});
+  
   const handleSortChange = (e: React.ChangeEvent<{ value: unknown }>) => {
     setSortBy(e.target.value as NoteSortValues);
   };
@@ -46,6 +51,11 @@ const NotesCard: React.FC<{
   const handleDeleteNote = (noteId: number) => {
     dispatch(deleteNote(bugId, noteId));
   };
+
+  const actionsOnClick = (noteId: number) => {
+    setNoteId(noteId);
+    setViewReplies(!viewReplies);
+  }
 
   return (
     <Paper className={classes.notesPaper}>
@@ -95,7 +105,7 @@ const NotesCard: React.FC<{
             variant={isMobile ? 'h6' : 'h5'}
           />
         )}
-        {sortedNotes.map((n) => (
+        {sortedNotes.map((n) => (n.isReply === false)? (
           <div key={n.id}>
             <div className={classes.singleNote}>
               <Avatar className={classes.avatar}>
@@ -179,13 +189,37 @@ const NotesCard: React.FC<{
                       }}
                       actionFunc={() => handleDeleteNote(n.id)}
                     />
+                    
                   )}
+                  <br></br>
+              {(n.repliesNb > 0) && (
+              <Button
+                onClick={() => actionsOnClick(n.id) }
+                color="primary"
+                variant="text"
+                startIcon={(n.id === noteId) && (viewReplies) ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                size= 'large'
+                style={{ marginLeft: "auto" }}
+              >
+                {(n.id === noteId) && (viewReplies) ? `Hide ${n.repliesNb} replies` : `View ${n.repliesNb} replies` }
+              </Button>
+              )}
+                  
                 </div>
+                {(n.id === noteId) && (
+                  <ReplyCard
+                    viewReplies={viewReplies}
+                    id={n.id}
+                    noteId={noteId}
+                    bugId={bugId}
+                    notes={sortedNotes}
+                  />
+                )}
               </div>
             </div>
             <Divider />
           </div>
-        ))}
+        ):'')}
       </div>
     </Paper>
   );

@@ -1,14 +1,13 @@
-const type = process.env.TYPEORM_TYPE || 'postgres';
-const username = process.env.TYPEORM_USERNAME || 'postgres'; 
-const password = process.env.TYPEORM_PASSWORD || 'D6w9yRIWw7r92opvkVzp';
-const host = process.env.TYPEORM_HOST || 'localhost';
-const port = parseInt(process.env.TYPEORM_PORT, 10) || 5432;
-const database = process.env.TYPEORM_DATABASE || 'test'; //name of database
+const type = 'postgres';
+const username = 'postgres'; 
+const password = 'D6w9yRIWw7r92opvkVzp';
+const host = 'localhost';
+const port = 5432;
+const database = 'test'; //name of database
 
 module.exports = {
   type,
   url:
-    process.env.DATABASE_URL ||
     `${type}://${username}:${password}@${host}:${port}/${database}`,
   entities: [
     process.env.NODE_ENV === 'test'
@@ -28,4 +27,10 @@ module.exports = {
   },
   synchronize: false,
   logging: false,
+  /*
+  // Necessary to connect to remote database
+  extra: {
+    ssl: true,
+  },
+  */
 };

@@ -1,5 +1,10 @@
 {
   "dependencies": {
-    "multer": "^1.4.5-lts.1"
+    "faker": "^6.6.6",
+    "multer": "^1.4.5-lts.1",
+    "typeorm-seeding": "^1.6.1"
+  },
+  "devDependencies": {
+    "@types/faker": "^6.6.9"
   }
 }

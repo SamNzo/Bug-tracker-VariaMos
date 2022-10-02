@@ -6,10 +6,10 @@ const DemoCredsBox: React.FC<{
   githubTokenHelp?: boolean;
   emailHelp?: boolean;
   descriptionHelp?: boolean;
-  classHelp?: boolean;
+  categoryHelp?: boolean;
   imageHelp?: boolean;
   JSONHelp?: boolean;
-  }> = ({ adminSignup, githubHelp, githubTokenHelp, emailHelp, descriptionHelp, classHelp, imageHelp, JSONHelp })  => {
+  }> = ({ adminSignup, githubHelp, githubTokenHelp, emailHelp, descriptionHelp, categoryHelp, imageHelp, JSONHelp })  => {
   if (adminSignup === true) {
     return (
       <div style={{ width: '100%', marginTop: '0.8em', marginBottom: '0.8em' }}>
@@ -93,7 +93,7 @@ const DemoCredsBox: React.FC<{
         </Alert>
       </div>  
     )}
-  else if (classHelp === true) {
+  else if (categoryHelp === true) {
     return (
       <div style={{ width: '100%', marginTop: '0.8em', marginBottom: '0.8em' }}>
         <Alert severity="info">
