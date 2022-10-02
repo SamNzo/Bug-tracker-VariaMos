@@ -2,7 +2,7 @@
 This file is intended for VariaMos developers.
 
 ## Database
-The app is currently connected with the VariaMos database.
+The app is currently connected to the VariaMos database.
 If you want to change it, change the parameters in `ormconfig.js`.
 
 ## Google reCAPTCHA
@@ -35,4 +35,9 @@ The first admin has to be added by hand by setting the **isAdmin** field to **tr
 Once one admin is added he can add others via the app.
 
 **Note: In the table *users* do not change the row of the user named 'user'**
+
+## URL
+Once the app is deployed you have to change the `backendUrl` variable in `client/src/backendUrl.ts` with the new url.
+
+Finally, replace *http://locahost:3000* with the new URL in `server/src/controllers/users/inviteAdmin` line 202.
 
