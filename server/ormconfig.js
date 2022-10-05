@@ -1,9 +1,9 @@
 const type = 'postgres';
-const username = 'postgres'; 
+const username = 'adminpg'; 
 const password = 'D6w9yRIWw7r92opvkVzp';
-const host = 'localhost';
+const host = 'variamos-db.postgres.database.azure.com';
 const port = 5432;
-const database = 'test'; //name of database
+const database = 'bugTracker'; //name of database
 
 module.exports = {
   type,
@@ -27,10 +27,8 @@ module.exports = {
   },
   synchronize: false,
   logging: false,
-  /*
   // Necessary to connect to remote database
   extra: {
     ssl: true,
   },
-  */
 };
